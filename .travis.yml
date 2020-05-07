@@ -1,16 +1,24 @@
 sudo: required
 services:
-    - docker
+  - docker
 
 before_install:
-    - docker build -t l01c/react-test -f ./client/Dockerfile.dev ./client
+  - docker build -t l01c/react-test -f ./client/Dockerfile.dev ./client
 
 script:
-    - docker run -e CI=true l01c/react-test npm test -- --coverage
+  - docker run -e CI=true l01c/react-test npm test -- --coverage
 
 after_success:
-    - docker build -t l01c/multi-client ./client
-    - docker build -t l01c/multi-client ./nginx
-    - docker build -t l01c/multi-client ./server
-    - docker build -t l01c/multi-client ./worker
+  - docker build -t l01c/multi-client ./client
+  - docker build -t l01c/multi-nginx ./nginx
+  - docker build -t l01c/multi-server ./server
+  - docker build -t l01c/multi-worker ./worker
 
+  # Log in to dokcer CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  # Take those images and push them to docker hub
+  - docker push l01c/multi-client
+  - docker push l01c/multi-nginx
+  - docker push l01c/multi-server
+  - docker push l01c/multi-worker
